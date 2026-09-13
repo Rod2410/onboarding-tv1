@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta
+        name="description"
+        content="Onboarding interativo TV1"
+    >
+
+    <title>Onboarding TV1</title>
+
+    <!-- Carrega a primeira arte com prioridade -->
+    <link
+        rel="preload"
+        href="assets/screens/screen-start.png"
+        as="image"
+    >
+
+    <link rel="stylesheet" href="style.css">
+
+    <!--
+        content.js precisa vir antes de script.js.
+        No futuro, esse arquivo poderá ser substituído por uma API.
+    -->
+    <script defer src="content.js"></script>
+    <script defer src="script.js"></script>
+</head>
+
+<body>
+    <main
+        id="onboardingApp"
+        class="app"
+        aria-label="Onboarding interativo TV1"
+    >
+        <div
+            id="stage"
+            class="stage"
+        >
+            <!-- Tela de carregamento -->
+            <div
+                id="preloader"
+                class="preloader"
+                role="status"
+                aria-live="polite"
+            >
+                <div class="preloader__content">
+                    <span class="preloader__text">
+                        Carregando jornada...
+                    </span>
+
+                    <div class="preloader__track">
+                        <div
+                            id="preloaderBar"
+                            class="preloader__bar"
+                        ></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- =====================================================
+                 TELA INICIAL
+            ====================================================== -->
+            <section
+                id="screen-start"
+                class="screen is-active"
+                data-screen="start"
+                aria-hidden="false"
+                tabindex="-1"
+            >
+                <img
+                    class="screen-art"
+                    src="assets/screens/screen-start.png"
+                    alt=""
+                    draggable="false"
+                >
+
+                <button
+                    id="startJourney"
+                    class="art-hotspot start-hotspot"
+                    type="button"
+                    aria-label="Iniciar jornada"
+                    data-debug-label="Iniciar jornada"
+                >
+                    <span class="sr-only">
+                        Iniciar jornada
+                    </span>
+                </button>
+            </section>
+
+            <!-- =====================================================
+                 MAPA PRINCIPAL
+            ====================================================== -->
+            <section
+                id="screen-map"
+                class="screen"
+                data-screen="map"
+                aria-hidden="true"
+                tabindex="-1"
+            >
+                <img
+                    class="screen-art"
+                    src="assets/screens/screen-map.png"
+                    alt=""
+                    draggable="false"
+                >
+
+                <!-- A imagem de hover será trocada pelo JavaScript -->
+                <img
+                    id="mapHoverArt"
+                    class="screen-art map-hover-art"
+                    src=""
+                    alt=""
+                    draggable="false"
+                >
+
+                <!-- Hotspots das unidades criados pelo JavaScript -->
+                <div
+                    id="mapHotspots"
+                    class="hotspot-layer"
+                    role="group"
+                    aria-label="Unidades de negócio"
+                ></div>
+
+                <!-- =================================================
+                     PAINEL DINÂMICO DAS UNIDADES
+                ================================================== -->
+                <div
+                    id="panelLayer"
+                    class="panel-layer"
+                    aria-hidden="true"
+                >
+                    <div
+                        id="panelReveal"
+                        class="panel-reveal"
+                    >
+                        <!-- Frame completo criado no Canva -->
+                        <img
+                            id="panelFrame"
+                            class="panel-frame"
+                            src=""
+                            alt=""
+                            draggable="false"
+                        >
+
+                        <!-- Área onde entram imagens e vídeos -->
+                        <div
+                            id="panelMediaBox"
+                            class="panel-media-box"
+                            data-debug-label="Área dinâmica"
+                        >
+                        
+                        <button
+                             id="panelExpand"
+                             class="panel-expand"
+                             type="button"
+                             aria-label="Ampliar conteúdo"
+                             title="Apresentar em tela ampliada"
+                        >
+                            <span aria-hidden="true">
+                                ⛶
+                            </span>
+                        </button>
+
+                            <div
+                                id="panelMediaContent"
+                                class="panel-media-content"
+                                aria-live="polite"
+                            ></div>
+
+                            <div
+                                id="panelEmptyState"
+                                class="empty-state"
+                            >
+                                <span>Conteúdo em breve</span>
+                            </div>
+
+                            <!--
+                                Esses botões são transparentes.
+                                Em imagens, clicar à esquerda volta
+                                e clicar à direita avança.
+                            -->
+                            <button
+                                id="mediaPreviousHit"
+                                class="media-hit media-hit--previous"
+                                type="button"
+                                tabindex="-1"
+                                aria-hidden="true"
+                                aria-label="Conteúdo anterior"
+                            ></button>
+
+                            <button
+                                id="mediaNextHit"
+                                class="media-hit media-hit--next"
+                                type="button"
+                                tabindex="-1"
+                                aria-hidden="true"
+                                aria-label="Próximo conteúdo"
+                            ></button>
+                        </div>
+
+                        <!-- Paginação: somente três indicadores visíveis -->
+                        <nav
+                            id="panelPagination"
+                            class="panel-pagination"
+                            aria-label="Navegação dos conteúdos"
+                            hidden
+                        >
+                            <button
+                                id="panelPrevious"
+                                class="pagination-arrow"
+                                type="button"
+                                aria-label="Conteúdo anterior"
+                            >
+                                &#8249;
+                            </button>
+
+                            <div
+                                id="panelDots"
+                                class="pagination-dots"
+                            ></div>
+
+                            <button
+                                id="panelNext"
+                                class="pagination-arrow"
+                                type="button"
+                                aria-label="Próximo conteúdo"
+                            >
+                                &#8250;
+                            </button>
+                        </nav>
+
+                        <!-- Botão transparente sobre o X da arte -->
+                        <button
+                            id="panelClose"
+                            class="art-hotspot panel-close"
+                            type="button"
+                            aria-label="Fechar apresentação"
+                            data-debug-label="Fechar painel"
+                        >
+                            <span class="sr-only">
+                                Fechar apresentação
+                            </span>
+                        </button>
+                    </div>
+                </div>
+            </section>
+<!-- =====================================================
+     CORREDOR DO HUB
+====================================================== -->
+<section
+    id="screen-hub-corridor"
+    class="screen"
+    data-screen="hubCorridor"
+    aria-hidden="true"
+    tabindex="-1"
+>
+    <img
+        class="screen-art"
+        src="assets/screens/screen-hub-corridor.png"
+        alt=""
+        draggable="false"
+    >
+    <img
+    id="corridorHoverArt"
+    class="screen-art corridor-hover-art"
+    src=""
+    alt=""
+    draggable="false"
+>
+
+    <!-- Seta esquerda: Pessoas & Cultura -->
+    <button
+        id="corridorLeft"
+        class="art-hotspot corridor-arrow corridor-arrow--left"
+        type="button"
+        aria-label="Ir para Pessoas e Cultura"
+        data-debug-label="Pessoas e Cultura"
+    >
+        <span class="sr-only">
+            Ir para Pessoas e Cultura
+        </span>
+    </button>
+
+    <!-- Seta direita: HUB atual -->
+    <button
+        id="corridorRight"
+        class="art-hotspot corridor-arrow corridor-arrow--right"
+        type="button"
+        aria-label="Ir para o HUB"
+        data-debug-label="HUB"
+    >
+        <span class="sr-only">
+            Ir para o HUB
+        </span>
+    </button>
+
+    <!-- Voltar para o prédio -->
+    <button
+        id="corridorBack"
+        class="art-hotspot back-hotspot"
+        type="button"
+        aria-label="Voltar para o prédio"
+        data-debug-label="Voltar para o prédio"
+    >
+        <span class="sr-only">
+            Voltar para o prédio
+        </span>
+    </button>
+</section>
+<!-- =====================================================
+     PESSOAS & CULTURA
+====================================================== -->
+<section
+    id="screen-people-culture"
+    class="screen"
+    data-screen="peopleCulture"
+    aria-hidden="true"
+    tabindex="-1"
+>
+    <img
+        class="screen-art"
+        src="assets/screens/screen-people-culture.png"
+        alt=""
+        draggable="false"
+    >
+
+    <!-- Hover de Pessoas & Cultura -->
+    <img
+        id="peopleCultureHoverArt"
+        class="screen-art people-culture-hover-art"
+        src="assets/hovers/hover-people-culture.png"
+        alt=""
+        draggable="false"
+    >
+
+    <!-- Ponto dourado grande -->
+    <button
+        id="peopleCulturePoint"
+        class="art-hotspot gold-hotspot gold-hotspot--large people-culture-point"
+        type="button"
+        aria-label="Entrar em Pessoas e Cultura"
+        data-debug-label="Pessoas e Cultura"
+    >
+        <span class="sr-only">
+            Entrar em Pessoas e Cultura
+        </span>
+    </button>
+
+    <button
+        id="peopleCultureBack"
+        class="art-hotspot back-hotspot"
+        type="button"
+        aria-label="Voltar para o corredor"
+        data-debug-label="Voltar para o corredor"
+    >
+        <span class="sr-only">
+            Voltar para o corredor
+        </span>
+    </button>
+</section>
+<!-- =====================================================
+     MENU PESSOAS & CULTURA
+====================================================== -->
+<section
+    id="screen-people-menu"
+    class="screen"
+    data-screen="peopleMenu"
+    aria-hidden="true"
+    tabindex="-1"
+>
+    <img
+        class="screen-art"
+        src="assets/screens/screen-people-menu.png"
+        alt=""
+        draggable="false"
+    >
+
+    <img
+    id="peopleMenuHoverArt"
+    class="screen-art people-menu-hover-art"
+    src=""
+    alt=""
+    draggable="false"
+>
+
+    <!-- Quem Somos -->
+    <button
+        id="peopleWhoWeAre"
+        class="art-hotspot people-menu-hotspot"
+        type="button"
+        aria-label="Quem Somos"
+        data-debug-label="Quem Somos"
+    >
+        <span class="sr-only">Quem Somos</span>
+    </button>
+
+    <!-- Jornada 365 -->
+    <button
+        id="peopleJourney365"
+        class="art-hotspot people-menu-hotspot"
+        type="button"
+        aria-label="Jornada 365"
+        data-debug-label="Jornada 365"
+    >
+        <span class="sr-only">Jornada 365</span>
+    </button>
+
+    <!-- Incentivos -->
+    <button
+        id="peopleIncentives"
+        class="art-hotspot people-menu-hotspot"
+        type="button"
+        aria-label="Incentivos"
+        data-debug-label="Incentivos"
+    >
+        <span class="sr-only">Incentivos</span>
+    </button>
+
+    <button
+        id="peopleMenuBack"
+        class="art-hotspot back-hotspot"
+        type="button"
+        aria-label="Voltar para Pessoas e Cultura"
+        data-debug-label="Voltar"
+    >
+        <span class="sr-only">
+            Voltar para Pessoas e Cultura
+        </span>
+    </button>
+
+
+    <!-- =================================================
+         PAINEL DINÂMICO DE PESSOAS & CULTURA
+    ================================================== -->
+    <div
+        id="peoplePanelLayer"
+        class="people-panel-layer"
+        aria-hidden="true"
+    >
+        <div
+            id="peoplePanelReveal"
+            class="people-panel-reveal"
+        >
+            <img
+                id="peoplePanelFrame"
+                class="screen-art people-panel-frame"
+                src=""
+                alt=""
+                draggable="false"
+            >
+
+            <!-- Conteúdo administrável -->
+            <div
+                id="peoplePanelMediaBox"
+                class="people-panel-media-box"
+            >
+
+            <button
+                id="peoplePanelExpand"
+                class="panel-expand"
+                type="button"
+                aria-label="Ampliar conteúdo"
+                title="Apresentar em tela ampliada"
+            >
+              <span aria-hidden="true">
+                  ⛶
+             </span>
+             </button>
+                <div
+                    id="peoplePanelMediaContent"
+                    class="panel-media-content"
+                ></div>
+
+                <div
+                    id="peoplePanelEmptyState"
+                    class="empty-state"
+                >
+                    <span>Conteúdo em breve</span>
+                </div>
+
+                <button
+                    id="peopleMediaPreviousHit"
+                    class="media-hit media-hit--previous"
+                    type="button"
+                    aria-label="Conteúdo anterior"
+                ></button>
+
+                <button
+                    id="peopleMediaNextHit"
+                    class="media-hit media-hit--next"
+                    type="button"
+                    aria-label="Próximo conteúdo"
+                ></button>
+            </div>
+
+            <!-- Paginação -->
+            <nav
+                id="peoplePanelPagination"
+                class="panel-pagination people-panel-pagination"
+                aria-label="Navegação dos conteúdos"
+                hidden
+            >
+                <button
+                    id="peoplePanelPrevious"
+                    class="pagination-arrow"
+                    type="button"
+                    aria-label="Conteúdo anterior"
+                >
+                    &#8249;
+                </button>
+
+                <div
+                    id="peoplePanelDots"
+                    class="pagination-dots"
+                ></div>
+
+                <button
+                    id="peoplePanelNext"
+                    class="pagination-arrow"
+                    type="button"
+                    aria-label="Próximo conteúdo"
+                >
+                    &#8250;
+                </button>
+            </nav>
+
+            <!-- X -->
+            <button
+                id="peoplePanelClose"
+                class="art-hotspot people-panel-close"
+                type="button"
+                aria-label="Fechar painel"
+                data-debug-label="Fechar painel"
+            >
+                <span class="sr-only">
+                    Fechar painel
+                </span>
+            </button>
+
+            <!-- Voltar desenhado na própria arte -->
+            <button
+                id="peoplePanelBack"
+                class="art-hotspot people-panel-back"
+                type="button"
+                aria-label="Voltar"
+                data-debug-label="Voltar"
+            >
+                <span class="sr-only">Voltar</span>
+            </button>
+        </div>
+    </div>
+</section>
+            <!-- =====================================================
+                 HUB
+            ====================================================== -->
+            <section
+                id="screen-hub"
+                class="screen"
+                data-screen="hub"
+                aria-hidden="true"
+                tabindex="-1"
+            >
+                <img
+                    class="screen-art"
+                    src="assets/screens/screen-hub.png"
+                    alt=""
+                    draggable="false"
+                >
+                <!-- Imagem dinâmica dos hovers do HUB -->
+
+                 <img
+                        id="hubHoverArt"
+                        class="screen-art hub-hover-art"
+                        src=""
+                        alt=""
+                        draggable="false"
+                >
+
+                <!-- Pontos do HUB criados pelo JavaScript -->
+                <div
+                    id="hubHotspots"
+                    class="hotspot-layer"
+                    role="group"
+                    aria-label="Áreas do HUB"
+                ></div>
+
+                <!-- Retorna do HUB para o prédio -->
+                <button
+                    id="hubBack"
+                    class="art-hotspot back-hotspot"
+                    type="button"
+                    aria-label="Voltar para o prédio"
+                    data-debug-label="Voltar para o prédio"
+                >
+                    <span class="sr-only">
+                        Voltar para o prédio
+                    </span>
+                </button>
+            </section>
+
+            <!-- =====================================================
+                 MARCAS
+            ====================================================== -->
+            <section
+                id="screen-brands"
+                class="screen"
+                data-screen="brands"
+                aria-hidden="true"
+                tabindex="-1"
+            >
+                <img
+                    class="screen-art"
+                    src="assets/screens/screen-brands.png"
+                    alt=""
+                    draggable="false"
+                >
+
+                <button
+                    id="brandsBack"
+                    class="art-hotspot back-hotspot"
+                    type="button"
+                    aria-label="Voltar para o HUB"
+                    data-debug-label="Voltar para o HUB"
+                >
+                    <span class="sr-only">
+                        Voltar para o HUB
+                    </span>
+                </button>
+            </section>
+
+            <!-- =====================================================
+                 LINHA DO TEMPO
+            ====================================================== -->
+            <section
+                id="screen-timeline"
+                class="screen"
+                data-screen="timeline"
+                aria-hidden="true"
+                tabindex="-1"
+            >
+                <img
+                    class="screen-art"
+                    src="assets/screens/screen-timeline.png"
+                    alt=""
+                    draggable="false"
+                >
+
+                <!-- Área clicável sobre o símbolo de play da câmera -->
+                <button
+                  id="timelinePlay"
+                  class="art-hotspot timeline-play-hotspot"
+                  type="button"
+                  aria-label="Assistir ao vídeo dos fundadores"
+                  data-debug-label="Abrir vídeo dos fundadores"
+                >
+                
+                 <span class="sr-only">
+                    Assistir ao vídeo dos fundadores
+                </span>
+            </button>
+
+                <button
+                    id="timelineBack"
+                    class="art-hotspot back-hotspot"
+                    type="button"
+                    aria-label="Voltar para o HUB"
+                    data-debug-label="Voltar para o HUB"
+                >
+                    <span class="sr-only">
+                        Voltar para o HUB
+                    </span>
+                </button>
+            </section>
+
+            <!-- =====================================================
+                 HISTÓRIA
+            ====================================================== -->
+            <section
+                id="screen-history"
+                class="screen"
+                data-screen="history"
+                aria-hidden="true"
+                tabindex="-1"
+            >
+                <img
+                    class="screen-art"
+                    src="assets/screens/screen-history.png"
+                    alt=""
+                    draggable="false"
+                >
+
+                <!-- Ponto dourado sobre a máquina de escrever -->
+                 
+                <button
+                    id="historyValues"
+                    class="art-hotspot gold-hotspot history-values-hotspot"
+                    type="button"
+                    aria-label="Conhecer os valores do Grupo TV1"
+                    data-debug-label="Abrir Valores"
+                >
+                
+                    <span class="sr-only">
+                        Conhecer os valores do Grupo TV1
+                    </span>
+                </button>
+
+                <!-- Área sobre o display/botão de play -->
+                
+
+                <button
+                    id="historyBack"
+                    class="art-hotspot back-hotspot"
+                    type="button"
+                    aria-label="Voltar para o HUB"
+                    data-debug-label="Voltar para o HUB"
+                >
+                    <span class="sr-only">
+                        Voltar para o HUB
+                    </span>
+                </button>
+            </section>
+
+            <!-- =====================================================
+             VALORES
+             ====================================================== -->
+            <section
+                id="screen-values"
+                class="screen"
+                data-screen="values"
+                aria-hidden="true"
+                tabindex="-1"
+            >
+            
+                <img
+                    class="screen-art"
+                    src="assets/screens/screen-values.png"
+                    alt=""
+                    draggable="false"
+                >
+                
+                <button
+                    id="valuesBack"
+                    class="art-hotspot back-hotspot"
+                    type="button"
+                    aria-label="Voltar para a máquina de escrever"
+                    data-debug-label="Voltar para Valores"
+                >
+                    <span class="sr-only">
+                        Voltar para a máquina de escrever
+                    </span>
+                </button>
+            </section>
+
+            <!-- =====================================================
+                 VÍDEO DOS FUNDADORES
+            ====================================================== -->
+            <section
+                id="screen-history-video"
+                class="screen"
+                data-screen="historyVideo"
+                aria-hidden="true"
+                tabindex="-1"
+            >
+                <img
+                    class="screen-art"
+                    src="assets/screens/screen-history-video.png"
+                    alt=""
+                    draggable="false"
+                >
+
+                <div
+                    id="foundersVideoBox"
+                    class="founders-video-box"
+                    data-debug-label="Vídeo dos fundadores"
+                >
+                    <video
+                        id="foundersVideo"
+                        class="founders-video"
+                        controls
+                        playsinline
+                        preload="metadata"
+                    >
+                        <source
+                            id="foundersVideoSource"
+                            src=""
+                            type="video/mp4"
+                        >
+
+                        Seu navegador não suporta vídeos HTML5.
+                    </video>
+
+                    <div
+                        id="foundersVideoEmpty"
+                        class="empty-state founders-video-empty"
+                    >
+                        <span>Conteúdo em breve</span>
+                    </div>
+                </div>
+
+                <button
+                    id="historyVideoBack"
+                    class="art-hotspot back-hotspot"
+                    type="button"
+                    aria-label="Voltar para História"
+                    data-debug-label="Voltar para História"
+                >
+                    <span class="sr-only">
+                        Voltar para História
+                    </span>
+                </button>
+            </section>
+
+            <noscript>
+                <div class="noscript-message">
+                    Esta experiência precisa do JavaScript ativado.
+                </div>
+            </noscript>
+        </div>
+    </main>
+    <div
+    id="presentationOverlay"
+    class="presentation-overlay"
+    aria-hidden="true"
+    hidden
+>
+    <button
+        id="presentationClose"
+        class="presentation-close"
+        type="button"
+        aria-label="Fechar apresentação"
+    >
+        ×
+    </button>
+
+    <div
+        class="presentation-stage"
+    >
+        <div
+            id="presentationMedia"
+            class="presentation-media"
+        ></div>
+
+        <button
+            id="presentationPrevious"
+            class="presentation-arrow presentation-arrow--previous"
+            type="button"
+            aria-label="Slide anterior"
+        >
+            ‹
+        </button>
+
+        <button
+            id="presentationNext"
+            class="presentation-arrow presentation-arrow--next"
+            type="button"
+            aria-label="Próximo slide"
+        >
+            ›
+        </button>
+    </div>
+
+    <div
+        id="presentationDots"
+        class="presentation-dots"
+    ></div>
+   </div>
+</body>
+</html>

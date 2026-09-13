@@ -1,0 +1,1867 @@
+/* =========================================================
+   FONTES
+========================================================= */
+
+@font-face {
+    font-family: "Gilroy";
+    src: url("assets/fonts/Gilroy-Regular.ttf") format("truetype");
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Gilroy";
+    src: url("assets/fonts/Gilroy-Medium.ttf") format("truetype");
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Gilroy";
+    src: url("assets/fonts/Gilroy-Bold.ttf") format("truetype");
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+}
+
+
+/* =========================================================
+   CONFIGURAÇÕES GERAIS
+========================================================= */
+
+:root {
+    --screen-transition: 760ms;
+    --panel-transition: 720ms;
+
+    --ease-soft:
+        cubic-bezier(0.22, 0.78, 0.24, 1);
+
+    --paper-background: #f2eee5;
+    --paper-light: #faf8f2;
+    --text-dark: #4f4b44;
+
+    --gold: #d8b94e;
+    --gold-light: #f1dc82;
+
+    --pagination-color: #a29880;
+    --pagination-active: #8e846d;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+}
+
+body {
+    overflow: hidden;
+
+    background:
+        radial-gradient(
+            circle at center,
+            #faf8f2 0%,
+            var(--paper-background) 75%
+        );
+
+    color: var(--text-dark);
+
+    font-family:
+        "Gilroy",
+        Arial,
+        Helvetica,
+        sans-serif;
+
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+}
+
+button,
+video {
+    font: inherit;
+}
+
+button {
+    -webkit-tap-highlight-color: transparent;
+}
+
+img {
+    display: block;
+    max-width: 100%;
+}
+
+[hidden] {
+    display: none !important;
+}
+
+
+/* =========================================================
+   UTILITÁRIOS
+========================================================= */
+
+.sr-only {
+    position: absolute;
+
+    width: 1px;
+    height: 1px;
+
+    padding: 0;
+    margin: -1px;
+
+    overflow: hidden;
+
+    clip: rect(0, 0, 0, 0);
+    clip-path: inset(50%);
+
+    white-space: nowrap;
+    border: 0;
+}
+
+
+/* =========================================================
+   ÁREA PRINCIPAL 1920 x 1080
+========================================================= */
+
+.app {
+    width: 100vw;
+    height: 100vh;
+
+    display: grid;
+    place-items: center;
+
+    overflow: hidden;
+}
+
+.stage {
+    position: relative;
+
+    /*
+        Mantém a proporção 1920 x 1080.
+        Em monitores que não sejam 16:9,
+        aparecerá uma margem discreta.
+    */
+    width: min(100vw, 177.777777vh);
+    height: min(100vh, 56.25vw);
+
+    overflow: hidden;
+    isolation: isolate;
+
+    background: var(--paper-background);
+
+    box-shadow:
+        0 18px 70px rgba(70, 59, 43, 0.08);
+}
+
+
+/* =========================================================
+   TELAS
+========================================================= */
+
+.screen {
+    --origin-x: 50%;
+    --origin-y: 50%;
+
+    position: absolute;
+    inset: 0;
+
+    z-index: 1;
+
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+
+    transform: scale(0.992);
+    transform-origin:
+        var(--origin-x)
+        var(--origin-y);
+
+    transition:
+        opacity var(--screen-transition) var(--ease-soft),
+        transform var(--screen-transition) var(--ease-soft);
+
+    outline: none;
+}
+
+.screen.is-active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+
+    transform: scale(1);
+}
+
+.screen.is-active.is-entering {
+    opacity: 0;
+    transform: scale(0.978);
+}
+
+.screen.is-active.is-leaving {
+    opacity: 0;
+    pointer-events: none;
+
+    transform: scale(1.07);
+}
+/* =========================================================
+   ANIMAÇÃO INICIAL SEM MOVIMENTO DO FUNDO
+========================================================= */
+
+/*
+    A tela inicial permanece totalmente parada
+    durante a entrada do mapa.
+*/
+.screen.is-intro-source {
+    opacity: 1 !important;
+
+    transform: none !important;
+
+    pointer-events: none;
+}
+
+/*
+    A tela do mapa é posicionada exatamente
+    sobre a tela inicial.
+
+    Somente a opacidade muda.
+*/
+.screen.is-intro-target {
+    opacity: 0;
+
+    transform: none !important;
+
+    pointer-events: none !important;
+
+    transition:
+        opacity 700ms
+        cubic-bezier(0.22, 0.78, 0.24, 1) !important;
+}
+
+.screen.is-intro-target.is-intro-visible {
+    opacity: 1;
+
+    transform: none !important;
+}
+
+
+/* =========================================================
+   ENTRADA SUAVE DOS PONTOS DOURADOS
+========================================================= */
+
+/*
+    Os pontos começam invisíveis.
+*/
+#screen-map .map-hotspot {
+    opacity: 0;
+
+    transform: scale(0.72);
+
+    transition:
+        opacity 620ms ease,
+        transform 720ms
+        cubic-bezier(0.22, 0.78, 0.24, 1);
+}
+
+/*
+    Depois do clique, os pontos aparecem.
+*/
+#screen-map.is-points-visible .map-hotspot {
+    opacity: 1;
+
+    transform: scale(1);
+}
+
+
+/*
+    Pequena diferença de tempo entre os pontos,
+    deixando a entrada mais natural.
+*/
+#screen-map.is-points-visible
+.map-hotspot:nth-child(1) {
+    transition-delay: 0ms;
+}
+
+#screen-map.is-points-visible
+.map-hotspot:nth-child(2) {
+    transition-delay: 60ms;
+}
+
+#screen-map.is-points-visible
+.map-hotspot:nth-child(3) {
+    transition-delay: 120ms;
+}
+
+#screen-map.is-points-visible
+.map-hotspot:nth-child(4) {
+    transition-delay: 180ms;
+}
+
+#screen-map.is-points-visible
+.map-hotspot:nth-child(5) {
+    transition-delay: 240ms;
+}
+
+#screen-map.is-points-visible
+.map-hotspot:nth-child(6) {
+    transition-delay: 300ms;
+}
+
+#screen-map.is-points-visible
+.map-hotspot:nth-child(7) {
+    transition-delay: 360ms;
+}
+.screen-art {
+    position: absolute;
+    inset: 0;
+
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+
+    user-select: none;
+    pointer-events: none;
+
+    -webkit-user-drag: none;
+}
+
+
+/* =========================================================
+   TELA DE CARREGAMENTO
+========================================================= */
+
+.preloader {
+    position: absolute;
+    inset: 0;
+
+    z-index: 999;
+
+    display: grid;
+    place-items: center;
+
+    background:
+        radial-gradient(
+            circle at center,
+            rgba(255, 253, 248, 0.98),
+            rgba(241, 235, 224, 0.98)
+        );
+
+    opacity: 1;
+
+    transition:
+        opacity 500ms ease,
+        visibility 500ms ease;
+}
+
+.preloader.is-hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.preloader__content {
+    width: min(26%, 420px);
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    gap: 16px;
+}
+
+.preloader__text {
+    color: #746d60;
+
+    font-size: clamp(13px, 1.1vw, 20px);
+    font-weight: 500;
+
+    letter-spacing: 0.04em;
+}
+
+.preloader__track {
+    width: 100%;
+    height: clamp(3px, 0.3vw, 6px);
+
+    overflow: hidden;
+
+    border-radius: 999px;
+
+    background: rgba(152, 138, 106, 0.18);
+}
+
+.preloader__bar {
+    width: 0%;
+    height: 100%;
+
+    border-radius: inherit;
+
+    background:
+        linear-gradient(
+            90deg,
+            #c9a947,
+            #ebd987
+        );
+
+    transition: width 250ms ease;
+}
+
+
+/* =========================================================
+   HOTSPOTS
+========================================================= */
+
+.hotspot-layer {
+    position: absolute;
+    inset: 0;
+
+    z-index: 10;
+}
+
+.art-hotspot {
+    position: absolute;
+
+    margin: 0;
+    padding: 0;
+
+    border: 0;
+    border-radius: 14px;
+
+    background: transparent;
+
+    cursor: pointer;
+
+    outline: none;
+}
+
+.art-hotspot:focus-visible {
+    outline: 3px solid rgba(210, 178, 70, 0.9);
+    outline-offset: 3px;
+}
+
+.start-hotspot::after {
+    content: "";
+
+    position: absolute;
+    inset: 4%;
+
+    border-radius: 18px;
+
+    background: rgba(255, 255, 255, 0);
+
+    transition:
+        background 350ms ease,
+        box-shadow 350ms ease,
+        transform 350ms ease;
+}
+
+.start-hotspot:hover::after,
+.start-hotspot:focus-visible::after {
+    background: rgba(255, 255, 255, 0.07);
+
+    box-shadow:
+        0 0 42px rgba(255, 243, 204, 0.18);
+
+    transform: scale(1.015);
+}
+
+/* Mantém o botão Voltar acima da camada dos pontos */
+.back-hotspot {
+    z-index: 25;
+    pointer-events: auto;
+    cursor: pointer;
+}
+
+/* =========================================================
+   PONTOS DOURADOS
+========================================================= */
+
+.gold-hotspot {
+    border-radius: 50%;
+    overflow: visible;
+}
+
+/* Núcleo do ponto */
+.gold-hotspot::before {
+    content: "";
+
+    position: absolute;
+    left: 50%;
+    top: 50%;
+
+    z-index: 2;
+
+    width: clamp(9px, 0.68vw, 13px);
+    height: clamp(9px, 0.68vw, 13px);
+
+    border-radius: 50%;
+
+    pointer-events: none;
+
+    transform: translate(-50%, -50%);
+
+    background:
+        radial-gradient(
+            circle at 35% 30%,
+            #fffef1 0%,
+            #fff8cf 22%,
+            #f4dfa1 50%,
+            #dec77b 76%,
+            #bea452 100%
+        );
+
+    box-shadow:
+        0 0 3px rgba(255, 251, 221, 0.95),
+        0 0 8px rgba(239, 217, 151, 0.55),
+        0 0 15px rgba(215, 190, 110, 0.3);
+
+    transition:
+        opacity 180ms ease,
+        transform 180ms ease;
+}
+
+/* Anel animado */
+.gold-hotspot::after {
+    content: "";
+
+    position: absolute;
+    left: 50%;
+    top: 50%;
+
+    z-index: 1;
+
+    width: clamp(20px, 1.35vw, 28px);
+    height: clamp(20px, 1.35vw, 28px);
+
+    border: 1px solid rgba(221, 196, 122, 0.42);
+    border-radius: 50%;
+
+    pointer-events: none;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(255, 239, 184, 0.12) 0%,
+            rgba(250, 230, 165, 0.05) 48%,
+            rgba(250, 230, 165, 0) 72%
+        );
+
+    box-shadow:
+        0 0 7px rgba(229, 205, 136, 0.32),
+        0 0 15px rgba(214, 187, 108, 0.18);
+
+    animation:
+        goldPulse 2.4s
+        cubic-bezier(0.2, 0.65, 0.35, 1)
+        infinite;
+}
+
+/*
+    Esconde somente o ponto que está
+    diretamente embaixo do mouse.
+*/
+.map-hotspot:hover::before,
+.map-hotspot:hover::after,
+.map-hotspot:focus-visible::before,
+.map-hotspot:focus-visible::after,
+.hub-hotspot:hover::before,
+.hub-hotspot:hover::after,
+.hub-hotspot:focus-visible::before,
+.hub-hotspot:focus-visible::after {
+    opacity: 0;
+
+    animation-play-state: paused;
+}
+
+.map-hotspot:hover::before,
+.map-hotspot:focus-visible::before,
+.hub-hotspot:hover::before,
+.hub-hotspot:focus-visible::before {
+    transform:
+        translate(-50%, -50%)
+        scale(0.7);
+}
+
+@keyframes goldPulse {
+    0% {
+        opacity: 0.12;
+
+        transform:
+            translate(-50%, -50%)
+            scale(0.7);
+    }
+
+    45% {
+        opacity: 0.48;
+    }
+
+    100% {
+        opacity: 0;
+
+        transform:
+            translate(-50%, -50%)
+            scale(1.45);
+    }
+}
+
+
+/* =========================================================
+   HOVER DO MAPA
+========================================================= */
+
+.map-hover-art {
+    z-index: 8;
+
+    opacity: 0;
+
+    transition:
+        opacity 540ms var(--ease-soft);
+}
+
+.map-hover-art.is-visible {
+    opacity: 1;
+}
+
+/* =========================================================
+   HOVERS DO HUB
+========================================================= */
+
+.hub-hover-art {
+    z-index: 8;
+
+    opacity: 0;
+
+    transition:
+        opacity 420ms var(--ease-soft);
+}
+
+.hub-hover-art.is-visible {
+    opacity: 1;
+}
+
+
+/* =========================================================
+   PAINEL DAS UNIDADES
+========================================================= */
+
+.panel-layer {
+    position: absolute;
+    inset: 0;
+
+    z-index: 30;
+
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.panel-layer.is-visible {
+    visibility: visible;
+}
+
+.panel-layer.is-open {
+    pointer-events: auto;
+}
+
+.panel-reveal {
+    position: absolute;
+    inset: 0;
+
+    transition:
+        clip-path var(--panel-transition) var(--ease-soft);
+
+    will-change: clip-path;
+}
+
+/* Painel que entra pela esquerda */
+.panel-layer[data-side="left"] .panel-reveal {
+    clip-path: inset(0 100% 0 0);
+}
+
+/* Painel que entra pela direita */
+.panel-layer[data-side="right"] .panel-reveal {
+    clip-path: inset(0 0 0 100%);
+}
+
+.panel-layer.is-open .panel-reveal {
+    clip-path: inset(0 0 0 0);
+}
+
+.panel-frame {
+    position: absolute;
+    inset: 0;
+
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+
+    pointer-events: none;
+    user-select: none;
+}
+
+
+/* =========================================================
+   ÁREA DINÂMICA DE IMAGEM E VÍDEO
+========================================================= */
+
+.panel-media-box {
+    position: absolute;
+
+    z-index: 4;
+
+    overflow: hidden;
+
+    border-radius: 3.2%;
+
+    background: #ece7dc;
+
+    opacity: 0;
+
+    transition:
+        opacity 400ms ease 180ms;
+
+    box-shadow:
+        0 5px 18px rgba(70, 58, 42, 0.05);
+}
+
+.panel-layer.is-open .panel-media-box {
+    opacity: 1;
+}
+
+.panel-media-content {
+    position: absolute;
+    inset: 0;
+
+    z-index: 1;
+
+    overflow: hidden;
+
+    border-radius: inherit;
+}
+
+.panel-media-item {
+    position: absolute;
+    inset: 0;
+
+    display: block;
+
+    width: 100%;
+    height: 100%;
+
+    border: 0;
+
+    object-fit: cover;
+    object-position: center center;
+
+    background: #ebe6da;
+}
+
+.panel-media-item[type="video/mp4"] {
+    background: #111;
+}
+
+.empty-state {
+    position: absolute;
+    inset: 0;
+
+    z-index: 2;
+
+    display: grid;
+    place-items: center;
+
+    padding: 5%;
+
+    color: #766d5e;
+
+    font-size: clamp(15px, 1.45vw, 27px);
+    font-weight: 500;
+
+    text-align: center;
+    letter-spacing: 0.01em;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(251, 249, 244, 0.96),
+            rgba(234, 225, 209, 0.94)
+        );
+}
+
+.media-error {
+    position: absolute;
+    inset: 0;
+
+    display: grid;
+    place-items: center;
+
+    padding: 8%;
+
+    color: #766d5e;
+
+    font-size: clamp(14px, 1.35vw, 25px);
+    font-weight: 500;
+
+    text-align: center;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(251, 249, 244, 0.97),
+            rgba(234, 225, 209, 0.97)
+        );
+}
+
+
+/* =========================================================
+   ÁREAS DE CLIQUE NA MÍDIA
+========================================================= */
+
+.media-hit {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+
+    z-index: 5;
+
+    width: 50%;
+
+    padding: 0;
+    margin: 0;
+
+    border: 0;
+
+    background: transparent;
+
+    cursor: pointer;
+}
+
+.media-hit--previous {
+    left: 0;
+}
+
+.media-hit--next {
+    right: 0;
+}
+
+.media-hit:disabled {
+    cursor: default;
+    pointer-events: none;
+}
+
+
+/* =========================================================
+   PAGINAÇÃO DO PAINEL
+========================================================= */
+
+.panel-pagination {
+    position: absolute;
+
+    z-index: 8;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: clamp(7px, 0.65vw, 13px);
+
+    min-width: clamp(120px, 10vw, 190px);
+
+    padding:
+        clamp(6px, 0.55vw, 11px)
+        clamp(9px, 0.8vw, 16px);
+
+    border-radius: 999px;
+
+    background: rgba(248, 246, 240, 0.86);
+
+    box-shadow:
+        0 8px 25px rgba(77, 66, 49, 0.08);
+
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+
+    opacity: 0;
+
+    transform: translate(-50%, -50%);
+
+    transition:
+        opacity 350ms ease 240ms;
+}
+
+.panel-layer.is-open .panel-pagination {
+    opacity: 1;
+}
+
+.pagination-arrow {
+    width: clamp(25px, 1.9vw, 36px);
+    height: clamp(25px, 1.9vw, 36px);
+
+    display: grid;
+    place-items: center;
+
+    padding: 0;
+
+    border: 0;
+    border-radius: 50%;
+
+    color: #776e5e;
+
+    background: transparent;
+
+    font-size: clamp(22px, 1.7vw, 34px);
+    font-weight: 400;
+    line-height: 1;
+
+    cursor: pointer;
+
+    transition:
+        opacity 200ms ease,
+        background 200ms ease;
+}
+
+.pagination-arrow:hover:not(:disabled),
+.pagination-arrow:focus-visible:not(:disabled) {
+    background: rgba(147, 134, 105, 0.12);
+}
+
+.pagination-arrow:focus-visible {
+    outline: 2px solid rgba(187, 155, 55, 0.75);
+    outline-offset: 1px;
+}
+
+.pagination-arrow:disabled {
+    opacity: 0.24;
+    cursor: default;
+}
+
+.pagination-dots {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: clamp(7px, 0.65vw, 13px);
+}
+
+.pagination-dot {
+    width: clamp(9px, 0.7vw, 14px);
+    height: clamp(9px, 0.7vw, 14px);
+
+    flex: 0 0 auto;
+
+    padding: 0;
+
+    border: 0;
+    border-radius: 999px;
+
+    background: var(--pagination-color);
+
+    opacity: 0.8;
+
+    cursor: pointer;
+
+    transition:
+        width 300ms var(--ease-soft),
+        opacity 250ms ease,
+        transform 250ms ease,
+        background 250ms ease;
+}
+
+.pagination-dot:hover,
+.pagination-dot:focus-visible {
+    opacity: 1;
+    transform: scale(1.08);
+}
+
+.pagination-dot:focus-visible {
+    outline: 2px solid rgba(187, 155, 55, 0.75);
+    outline-offset: 3px;
+}
+
+.pagination-dot.is-active {
+    width: clamp(25px, 1.9vw, 38px);
+
+    opacity: 1;
+
+    background: var(--pagination-active);
+}
+
+
+/* =========================================================
+   BOTÃO DE FECHAR
+========================================================= */
+
+.panel-close {
+    z-index: 12;
+
+    opacity: 0;
+
+    transition: opacity 300ms ease 200ms;
+}
+
+.panel-layer.is-open .panel-close {
+    opacity: 1;
+}
+
+
+/* =========================================================
+   VÍDEO DOS FUNDADORES
+========================================================= */
+
+.founders-video-box {
+    position: absolute;
+
+    z-index: 5;
+
+    overflow: hidden;
+
+    border-radius: 2%;
+
+    background: #eae3d6;
+
+    box-shadow:
+        0 12px 42px rgba(62, 53, 39, 0.08);
+}
+
+.founders-video {
+    position: absolute;
+    inset: 0;
+
+    z-index: 1;
+
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+    object-position: center;
+
+    background: #111;
+
+    opacity: 0;
+
+    transition: opacity 450ms ease;
+}
+
+.founders-video.is-ready {
+    opacity: 1;
+}
+
+.founders-video-empty {
+    z-index: 2;
+}
+
+
+/* =========================================================
+   MENSAGEM SEM JAVASCRIPT
+========================================================= */
+
+.noscript-message {
+    position: absolute;
+    inset: 0;
+
+    z-index: 1000;
+
+    display: grid;
+    place-items: center;
+
+    padding: 30px;
+
+    background: #f7f3eb;
+
+    color: #514c43;
+
+    font-size: 22px;
+    text-align: center;
+}
+
+
+/* =========================================================
+   MODO DE DEPURAÇÃO
+
+   Abra:
+   index.html?debug=1
+
+   Os pontos e áreas clicáveis ficarão visíveis.
+========================================================= */
+
+body.debug .art-hotspot,
+body.debug .gold-hotspot {
+    background: rgba(220, 35, 60, 0.14);
+    outline: 2px dashed rgba(220, 35, 60, 0.9);
+}
+
+body.debug .art-hotspot::before,
+body.debug .gold-hotspot::before {
+    content: attr(data-debug-label);
+
+    position: absolute;
+    left: 0;
+    top: 0;
+
+    z-index: 30;
+
+    min-width: max-content;
+
+    padding: 4px 7px;
+
+    border-radius: 4px;
+
+    color: #fff;
+    background: rgba(180, 20, 45, 0.9);
+
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+body.debug .panel-media-box,
+body.debug .founders-video-box {
+    overflow: visible;
+
+    outline: 3px dashed #0086d1;
+}
+
+body.debug .panel-media-box::after,
+body.debug .founders-video-box::after {
+    content: attr(data-debug-label);
+
+    position: absolute;
+    left: 0;
+    top: -26px;
+
+    z-index: 50;
+
+    padding: 4px 7px;
+
+    border-radius: 4px;
+
+    color: #fff;
+    background: #0086d1;
+
+    font-size: 11px;
+    font-weight: 700;
+}
+
+/* =========================================================
+   CORREDOR DO HUB
+========================================================= */
+
+.corridor-arrow {
+    z-index: 12;
+    cursor: pointer;
+}
+
+
+/* =========================================================
+   PESSOAS & CULTURA
+========================================================= */
+
+.people-culture-hover-art {
+    z-index: 8;
+
+    opacity: 0;
+
+    transition:
+        opacity 420ms var(--ease-soft);
+}
+
+.people-culture-hover-art.is-visible {
+    opacity: 1;
+}
+
+.people-culture-point {
+    z-index: 10;
+}
+
+
+/* Ponto maior que os demais */
+.gold-hotspot--large::before {
+    width: clamp(17px, 1.25vw, 25px);
+    height: clamp(17px, 1.25vw, 25px);
+
+    box-shadow:
+        0 0 5px rgba(255, 251, 221, 0.95),
+        0 0 14px rgba(239, 217, 151, 0.68),
+        0 0 28px rgba(215, 190, 110, 0.38);
+}
+
+.gold-hotspot--large::after {
+    width: clamp(38px, 2.8vw, 54px);
+    height: clamp(38px, 2.8vw, 54px);
+}
+
+
+/* Ao passar o mouse, somente este ponto some */
+.people-culture-point:hover::before,
+.people-culture-point:hover::after,
+.people-culture-point:focus-visible::before,
+.people-culture-point:focus-visible::after {
+    opacity: 0;
+
+    animation-play-state: paused;
+}
+
+
+/* =========================================================
+   MENU PESSOAS & CULTURA
+========================================================= */
+
+.people-menu-hotspot {
+    z-index: 60;
+    cursor: pointer;
+    pointer-events: auto;
+}
+
+
+/* =========================================================
+   PAINEL PESSOAS & CULTURA
+========================================================= */
+
+.people-panel-layer {
+    position: absolute;
+    inset: 0;
+
+    z-index: 40;
+
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.people-panel-layer.is-visible {
+    visibility: visible;
+}
+
+.people-panel-layer.is-open {
+    pointer-events: auto;
+}
+
+.people-panel-reveal {
+    position: absolute;
+    inset: 0;
+
+    clip-path: inset(0 0 0 100%);
+
+    transition:
+        clip-path
+        var(--panel-transition)
+        var(--ease-soft);
+}
+
+.people-panel-layer.is-open
+.people-panel-reveal {
+    clip-path: inset(0);
+}
+
+.people-panel-frame {
+    z-index: 1;
+}
+
+
+/*
+   Espaço branco à direita
+   reservado para conteúdo.
+*/
+.people-panel-media-box {
+    position: absolute;
+
+    /*
+        Área do conteúdo no lado direito do painel.
+    */
+    left: 52.5%;
+    top: 23%;
+
+    width: 38%;
+    
+    /*
+        Formato de slide PowerPoint / 16:9.
+    */
+    aspect-ratio: 16 / 9;
+
+    height: auto;
+
+    z-index: 5;
+
+    overflow: hidden;
+
+    border-radius: 16px;
+
+    background: #ffffff;
+
+    opacity: 0;
+
+    transition:
+        opacity 350ms ease 200ms;
+}
+
+.people-panel-layer.is-open
+.people-panel-media-box {
+    opacity: 1;
+}
+
+/*
+    As imagens dos painéis de Pessoas & Cultura
+    devem aparecer inteiras.
+
+    Não usamos cover, porque cover corta o slide.
+*/
+.people-panel-media-box .panel-media-item {
+    width: 100%;
+    height: 100%;
+
+    object-fit: contain;
+
+    object-position: center;
+
+    display: block;
+
+    background: #ffffff;
+}
+
+.people-panel-media-box video.panel-media-item {
+    width: 100%;
+    height: 100%;
+
+    object-fit: contain;
+
+    background: #000;
+}
+
+.people-panel-pagination {
+    position: absolute;
+
+    /*
+        Centralizado abaixo da imagem.
+    */
+    left: 71.5%;
+    top: 65%;
+
+    transform: translateX(-50%);
+
+    z-index: 10;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 10px;
+
+    width: auto;
+
+    min-width: 170px;
+
+    padding: 10px 18px;
+
+    border-radius: 999px;
+
+    background:
+        rgba(255, 253, 247, 0.94);
+
+    box-shadow:
+        0 4px 18px
+        rgba(70, 60, 45, 0.08);
+}
+    .people-panel-pagination
+    .pagination-arrow {
+    width: 28px;
+    height: 28px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 0;
+
+    background: transparent;
+
+    font-size: 28px;
+    line-height: 1;
+
+    cursor: pointer;
+
+    color: #746c57;
+}
+
+   .people-panel-pagination
+   .pagination-dots {
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 9px;
+}
+
+    .people-panel-pagination
+    .pagination-dot {
+    width: 12px;
+    height: 12px;
+
+    padding: 0;
+
+    border: 0;
+    border-radius: 50%;
+
+    background: #b7ad91;
+
+    cursor: pointer;
+
+    transition:
+        width 180ms ease,
+        border-radius 180ms ease,
+        opacity 180ms ease;
+}
+    
+.people-panel-close {
+    z-index: 70;
+}
+
+.people-panel-back {
+    z-index: 70;
+}
+/* =========================================================
+   MOVIMENTO REDUZIDO
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        scroll-behavior: auto !important;
+
+        animation-duration: 1ms !important;
+        animation-iteration-count: 1 !important;
+
+        transition-duration: 1ms !important;
+        transition-delay: 0ms !important;
+    }
+}
+
+/* =========================================================
+   HOVER MENU PESSOAS & CULTURA
+========================================================= */
+
+.people-menu-hover-art {
+    z-index: 8;
+
+    opacity: 0;
+
+    pointer-events: none;
+
+    transition:
+        opacity 120ms ease;
+}
+
+.people-menu-hover-art.is-visible {
+    opacity: 1;
+}
+
+
+/*
+   Os hotspots precisam ficar acima
+   da imagem de hover.
+*/
+.people-menu-hotspot {
+    z-index: 60;
+
+    pointer-events: auto;
+
+    cursor: pointer;
+}
+
+/* =========================================================
+   TROCA INSTANTÂNEA - PESSOAS & CULTURA
+========================================================= */
+
+.screen.no-transition {
+    transition: none !important;
+    animation: none !important;
+}
+
+.people-panel-pagination {
+    position: absolute !important;
+
+    left: 71.5% !important;
+    top: 66% !important;
+
+    transform: translateX(-50%);
+
+    z-index: 80 !important;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 10px;
+
+    min-width: 170px;
+
+    padding: 10px 18px;
+
+    border-radius: 999px;
+
+    background: rgba(255, 253, 247, 0.96);
+
+    pointer-events: auto;
+}
+
+.people-panel-pagination:not([hidden]) {
+    display: flex !important;
+}
+
+/* =========================================================
+   CORREÇÃO PAGINAÇÃO - PESSOAS & CULTURA
+========================================================= */
+
+.people-panel-layer.is-open
+.people-panel-pagination:not([hidden]) {
+    display: flex !important;
+
+    position: absolute !important;
+
+    left: 71.5% !important;
+    top: 67% !important;
+
+    transform: translateX(-50%) !important;
+
+    z-index: 100 !important;
+
+    opacity: 1 !important;
+    visibility: visible !important;
+
+    pointer-events: auto !important;
+
+    align-items: center !important;
+    justify-content: center !important;
+
+    gap: 10px !important;
+
+    min-width: 170px;
+
+    padding: 10px 18px;
+
+    border-radius: 999px;
+
+    background:
+        rgba(255, 253, 247, 0.96);
+}
+
+
+/* SETAS */
+
+.people-panel-pagination
+.pagination-arrow {
+    display: flex !important;
+
+    width: 30px;
+    height: 30px;
+
+    padding: 0;
+
+    align-items: center;
+    justify-content: center;
+
+    border: 0;
+
+    background: transparent;
+
+    font-size: 30px;
+    line-height: 1;
+
+    color: #746c57;
+
+    cursor: pointer;
+
+    opacity: 1;
+}
+
+.people-panel-pagination
+.pagination-arrow:disabled {
+    opacity: 0.3;
+}
+
+
+/* ÁREA DAS BOLINHAS */
+
+.people-panel-pagination
+.pagination-dots {
+    display: flex !important;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 9px;
+}
+
+
+/* BOLINHAS */
+
+.people-panel-pagination
+.pagination-dot {
+    display: block !important;
+
+    width: 12px;
+    height: 12px;
+
+    min-width: 12px;
+
+    padding: 0;
+
+    border: 0;
+    border-radius: 50%;
+
+    background: #b7ad91;
+
+    cursor: pointer;
+}
+
+
+/* INDICADOR ATIVO */
+
+.people-panel-pagination
+.pagination-dot.is-active {
+    width: 38px;
+
+    min-width: 38px;
+
+    border-radius: 999px;
+
+    background: #8f8466;
+}
+
+/* =========================================================
+   HOVER CORREDOR HUB
+========================================================= */
+
+.corridor-hover-art {
+    z-index: 8;
+
+    opacity: 0;
+
+    pointer-events: none;
+
+    transition: none !important;
+}
+
+.corridor-hover-art.is-visible {
+    opacity: 1;
+}
+
+.corridor-arrow {
+    z-index: 10;
+}
+/* =========================================================
+   EXPANDIR CONTEÚDO
+========================================================= */
+
+.panel-expand {
+    position: absolute;
+
+    right: 12px;
+    top: 12px;
+
+    z-index: 90;
+
+    width: 42px;
+    height: 42px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0;
+
+    border: 0;
+    border-radius: 50%;
+
+    background:
+        rgba(255, 255, 255, 0.92);
+
+    color: #6f6858;
+
+    font-size: 25px;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 3px 14px
+        rgba(60, 50, 35, 0.15);
+}
+
+
+/* =========================================================
+   MODO APRESENTAÇÃO
+========================================================= */
+
+.presentation-overlay {
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 9999;
+
+    display: flex;
+    flex-direction: column;
+
+    align-items: center;
+    justify-content: center;
+
+    background:
+        rgba(247, 244, 236, 0.98);
+}
+
+.presentation-overlay[hidden] {
+    display: none !important;
+}
+
+
+.presentation-stage {
+    position: relative;
+
+    width:
+        min(
+            92vw,
+            calc(84vh * 16 / 9)
+        );
+
+    aspect-ratio: 16 / 9;
+
+    background: #ffffff;
+
+    box-shadow:
+        0 12px 45px
+        rgba(50, 45, 35, 0.14);
+
+    overflow: hidden;
+}
+
+
+.presentation-media {
+    position: absolute;
+
+    inset: 0;
+}
+
+
+.presentation-media img,
+.presentation-media video {
+    width: 100%;
+    height: 100%;
+
+    display: block;
+
+    object-fit: contain;
+    object-position: center;
+
+    background: #ffffff;
+}
+
+
+.presentation-close {
+    position: fixed;
+
+    right: 30px;
+    top: 22px;
+
+    z-index: 10002;
+
+    width: 52px;
+    height: 52px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 0;
+    border-radius: 50%;
+
+    background:
+        rgba(255, 255, 255, 0.94);
+
+    color: #625b4c;
+
+    font-size: 38px;
+    line-height: 1;
+
+    cursor: pointer;
+}
+
+
+.presentation-arrow {
+    position: absolute;
+
+    top: 50%;
+
+    z-index: 10001;
+
+    transform: translateY(-50%);
+
+    width: 58px;
+    height: 74px;
+
+    border: 0;
+
+    background:
+        rgba(255, 255, 255, 0.88);
+
+    color: #716957;
+
+    font-size: 52px;
+
+    cursor: pointer;
+}
+
+
+.presentation-arrow--previous {
+    left: 18px;
+}
+
+
+.presentation-arrow--next {
+    right: 18px;
+}
+
+
+.presentation-arrow:disabled {
+    opacity: 0.25;
+
+    cursor: default;
+}
+
+
+.presentation-dots {
+    min-height: 36px;
+
+    margin-top: 18px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 9px;
+}
+
+
+.presentation-dot {
+    width: 11px;
+    height: 11px;
+
+    padding: 0;
+
+    border: 0;
+    border-radius: 50%;
+
+    background: #b7ad91;
+
+    cursor: pointer;
+}
+
+
+.presentation-dot.is-active {
+    width: 36px;
+
+    border-radius: 999px;
+
+    background: #8f8466;
+}
